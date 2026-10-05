@@ -13093,6 +13093,17 @@ void CompilerGLSL::emit_instruction(const Instruction &instruction)
 		uint32_t ptr = ops[2];
 
 		flush_variable_declaration(ptr);
+		auto &type = get<SPIRType>(result_type);
+		if (((type.basetype == SPIRType::Struct &&
+		      has_extended_decoration(ptr, SPIRVCrossDecorationPhysicalTypeID)) ||
+		     has_extended_decoration(ptr, SPIRVCrossDecorationPhysicalTypePacked)) &&
+		    (type.basetype == SPIRType::Struct || !type.array.empty()))
+		{
+			emit_uninitialized_temporary_expression(result_type, id);
+			emit_copy_logical_type(id, result_type, ptr, get_pointee_type_id(expression_type_id(ptr)), {});
+			register_read(id, ptr, false);
+			break;
+		}
 
 		// If we're loading from memory that cannot be changed by the shader,
 		// just forward the expression directly to avoid needless temporaries.
@@ -13158,7 +13169,6 @@ void CompilerGLSL::emit_instruction(const Instruction &instruction)
 			expr = to_unpacked_expression(ptr);
 		}
 
-		auto &type = get<SPIRType>(result_type);
 		auto &expr_type = expression_type(ptr);
 
 		// If the expression has more vector components than the result type, insert
@@ -13376,6 +13386,16 @@ void CompilerGLSL::emit_instruction(const Instruction &instruction)
 		else if (var && var->remapped_variable && var->static_expression)
 		{
 			// Skip the write.
+		}
+		else if (((expression_type(ops[1]).basetype == SPIRType::Struct &&
+		           has_extended_decoration(ops[0], SPIRVCrossDecorationPhysicalTypeID)) ||
+		          has_extended_decoration(ops[0], SPIRVCrossDecorationPhysicalTypePacked)) &&
+		         (expression_type(ops[1]).basetype == SPIRType::Struct || !expression_type(ops[1]).array.empty()))
+		{
+			flush_variable_declaration(ops[0]);
+			flush_variable_declaration(ops[1]);
+			emit_copy_logical_type(ops[0], get_pointee_type_id(expression_type_id(ops[0])), ops[1],
+			                       expression_type_id(ops[1]), {});
 		}
 		else if (flattened_structs.count(ops[0]))
 		{
@@ -13975,19 +13995,33 @@ void CompilerGLSL::emit_instruction(const Instruction &instruction)
 			// RHS expression is immutable, so just forward it.
 			// Copying these things really make no sense, but
 			// seems to be allowed anyways.
+			auto *rhs_expr = maybe_get<SPIRExpression>(rhs);
+			bool need_transpose = pointer && rhs_expr && rhs_expr->need_transpose;
+			if (need_transpose)
+				rhs_expr->need_transpose = false;
 			auto &e = emit_op(result_type, id, to_expression(rhs), true, true);
+			if (need_transpose)
+				rhs_expr->need_transpose = true;
 			if (pointer)
 			{
 				auto *var = maybe_get_backing_variable(rhs);
 				e.loaded_from = var ? var->self : ID(0);
+				if (uint32_t physical_type = get_extended_decoration(rhs, SPIRVCrossDecorationPhysicalTypeID))
+					set_extended_decoration(id, SPIRVCrossDecorationPhysicalTypeID, physical_type);
+				if (has_extended_decoration(rhs, SPIRVCrossDecorationPhysicalTypePacked))
+					set_extended_decoration(id, SPIRVCrossDecorationPhysicalTypePacked);
 			}
 
 			// If we're copying an access chain, need to inherit the read expressions.
-			auto *rhs_expr = maybe_get<SPIRExpression>(rhs);
 			if (rhs_expr)
 			{
 				e.implied_read_expressions = rhs_expr->implied_read_expressions;
 				e.expression_dependencies = rhs_expr->expression_dependencies;
+				if (pointer)
+				{
+					e.need_transpose = rhs_expr->need_transpose;
+					e.access_chain = rhs_expr->access_chain;
+				}
 			}
 		}
 		break;

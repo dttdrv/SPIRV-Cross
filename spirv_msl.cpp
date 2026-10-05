@@ -11582,6 +11582,8 @@ uint32_t CompilerMSL::get_physical_tess_level_array_size(BuiltIn builtin) const
 // Returns whether the struct assignment was emitted.
 bool CompilerMSL::maybe_emit_array_assignment(uint32_t id_lhs, uint32_t id_rhs)
 {
+	if (has_extended_decoration(id_lhs, SPIRVCrossDecorationPhysicalTypePacked))
+		return false;
 	// We only care about assignments of an entire array
 	auto &type = expression_type(id_lhs);
 	if (!is_array(get_pointee_type(type)))
