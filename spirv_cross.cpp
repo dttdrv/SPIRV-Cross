@@ -690,7 +690,7 @@ bool Compiler::is_immutable(uint32_t id) const
 		return false;
 }
 
-static inline bool storage_class_is_interface(StorageClass storage)
+static inline bool storage_class_is_interface(StorageClass storage, const SmallVector<Capability> *capabilities = nullptr)
 {
 	switch (storage)
 	{
@@ -702,6 +702,14 @@ static inline bool storage_class_is_interface(StorageClass storage)
 	case StorageClassPushConstant:
 	case StorageClassStorageBuffer:
 		return true;
+
+	case StorageClassRayPayloadKHR:
+	case StorageClassIncomingRayPayloadKHR:
+	case StorageClassHitAttributeKHR:
+	case StorageClassCallableDataKHR:
+	case StorageClassIncomingCallableDataKHR:
+	case StorageClassShaderRecordBufferKHR:
+		return !capabilities || find(begin(*capabilities), end(*capabilities), CapabilityRayTracingNV) == end(*capabilities);
 
 	default:
 		return false;
@@ -730,7 +738,7 @@ bool Compiler::is_hidden_variable(const SPIRVariable &var, bool include_builtins
 		return true;
 	}
 
-	return check_active_interface_variables && storage_class_is_interface(var.storage) &&
+	return check_active_interface_variables && storage_class_is_interface(var.storage, &ir.declared_capabilities) &&
 	       active_interface_variables.find(var.self) == end(active_interface_variables);
 }
 
@@ -928,6 +936,13 @@ bool Compiler::InterfaceVariableAccessHandler::handle(Op opcode, const uint32_t 
 			variables.insert(args[1]);
 		break;
 	}
+
+	case OpTraceRayKHR:
+	case OpExecuteCallableKHR:
+		if (length < (opcode == OpTraceRayKHR ? 11u : 2u))
+			return false;
+		variable = args[opcode == OpTraceRayKHR ? 10 : 1];
+		break;
 
 	case OpExtInst:
 	{
