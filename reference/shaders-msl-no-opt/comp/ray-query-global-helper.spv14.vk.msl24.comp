@@ -50,7 +50,7 @@ bool advanceQuery(thread raytracing::intersection_query<raytracing::instancing, 
 kernel void main0(device Result& result [[buffer(1)]], raytracing::acceleration_structure<raytracing::instancing> scene [[buffer(0)]])
 {
     raytracing::intersection_query<raytracing::instancing, raytracing::triangle_data> query;
-    query.reset(ray(float3(0.0), float3(0.0, 0.0, 1.0), 0.00999999977648258209228515625, 100.0), scene, 255u, spvMakeIntersectionParams(0u));
+    query.reset(raytracing::ray(float3(0.0), float3(0.0, 0.0, 1.0), 0.00999999977648258209228515625, 100.0), scene, 255u, spvMakeIntersectionParams(0u));
     for (;;)
     {
         bool _36 = advanceQuery(query);

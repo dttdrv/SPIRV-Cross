@@ -66,7 +66,7 @@ uint trace(spvRTASArray18 scenes, thread raytracing::intersection_query<raytraci
     uint param = 0u;
     device const ulong* _32 = getScene(scenes, param);
     _29_rayQueryMetadata.accelerationStructure = _32;
-    query.reset(ray(float3(0.0), float3(0.0, 0.0, -1.0), 0.0, 100.0), *(device const raytracing::acceleration_structure<raytracing::instancing>*)_32, 255u, spvMakeIntersectionParams(0u));
+    query.reset(raytracing::ray(float3(0.0), float3(0.0, 0.0, -1.0), 0.0, 100.0), *(device const raytracing::acceleration_structure<raytracing::instancing>*)_32, 255u, spvMakeIntersectionParams(0u));
     bool _42 = query.next();
     if (_42)
     {

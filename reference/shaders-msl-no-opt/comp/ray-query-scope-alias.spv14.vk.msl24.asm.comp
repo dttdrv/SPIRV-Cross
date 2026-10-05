@@ -44,14 +44,14 @@ uint _40(uint i, uint j, const raytracing::acceleration_structure<raytracing::in
     raytracing::intersection_query<raytracing::instancing, raytracing::triangle_data> branch_query;
     if (i == 0u)
     {
-        branch_query.reset(ray(float3(0.0), float3(0.0, 0.0, -1.0), 0.0, 100.0), _2, 255u, spvMakeIntersectionParams(0u));
+        branch_query.reset(raytracing::ray(float3(0.0), float3(0.0, 0.0, -1.0), 0.0, 100.0), _2, 255u, spvMakeIntersectionParams(0u));
     }
     else
     {
-        branch_query.reset(ray(float3(0.0), float3(0.0, 0.0, -1.0), 0.0, 100.0), _2, 255u, spvMakeIntersectionParams(0u));
+        branch_query.reset(raytracing::ray(float3(0.0), float3(0.0, 0.0, -1.0), 0.0, 100.0), _2, 255u, spvMakeIntersectionParams(0u));
     }
     bool _50 = branch_query.next();
-    queries[i][j].reset(ray(float3(0.0), float3(0.0, 0.0, -1.0), 0.0, 100.0), _2, 255u, spvMakeIntersectionParams(0u));
+    queries[i][j].reset(raytracing::ray(float3(0.0), float3(0.0, 0.0, -1.0), 0.0, 100.0), _2, 255u, spvMakeIntersectionParams(0u));
     bool _51 = queries[i][j].next();
     if (_51)
     {

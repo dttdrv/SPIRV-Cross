@@ -10975,7 +10975,7 @@ void CompilerMSL::emit_instruction(const Instruction &instruction)
 		if (uses_ray_query_flags)
 			statement(ray_query_metadata_expression(ops[0]), ".flags = ", to_expression(ops[2]), ";");
 
-		statement(to_expression(ops[0]), ".reset(", "ray(", to_expression(ops[4]), ", ", to_expression(ops[6]), ", ",
+		statement(to_expression(ops[0]), ".reset(", "raytracing::ray(", to_expression(ops[4]), ", ", to_expression(ops[6]), ", ",
 		          to_expression(ops[5]), ", ", to_expression(ops[7]),
 		          "), ", msl_options.acceleration_structure_descriptor_as_address ?
 		                       "*(device const raytracing::acceleration_structure<raytracing::instancing>*)" : "",
