@@ -16249,7 +16249,7 @@ void CompilerGLSL::emit_instruction(const Instruction &instruction)
 		          to_expression(ops[6]), ", ", to_expression(ops[7]), ");");
 		break;
 	case OpRayQueryProceedKHR:
-		flush_variable_declaration(ops[0]);
+		flush_variable_declaration(ops[2]);
 		emit_op(ops[0], ops[1], join("rayQueryProceedEXT(", to_expression(ops[2]), ")"), false);
 		break;
 	case OpRayQueryTerminateKHR:

@@ -3525,18 +3525,18 @@ void Compiler::AnalyzeVariableScopeAccessHandler::notify_variable_access(uint32_
 		for (auto child_id : itr->second)
 			notify_variable_access(child_id, block);
 
-	if (id_is_phi_variable(id))
+	if (id_is_phi_or_ray_query(id))
 		accessed_variables_to_block[id].insert(block);
 	else if (id_is_potential_temporary(id))
 		accessed_temporaries_to_block[id].insert(block);
 }
 
-bool Compiler::AnalyzeVariableScopeAccessHandler::id_is_phi_variable(uint32_t id) const
+bool Compiler::AnalyzeVariableScopeAccessHandler::id_is_phi_or_ray_query(uint32_t id) const
 {
 	if (id >= compiler.get_current_id_bound())
 		return false;
 	auto *var = compiler.maybe_get<SPIRVariable>(id);
-	return var && var->phi_variable;
+	return var && (var->phi_variable || compiler.get<SPIRType>(var->basetype).basetype == SPIRType::RayQuery);
 }
 
 bool Compiler::AnalyzeVariableScopeAccessHandler::id_is_potential_temporary(uint32_t id) const

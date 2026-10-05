@@ -2063,6 +2063,7 @@ void CompilerMSL::extract_global_variables_from_function(uint32_t func_id, std::
 
 			switch (op)
 			{
+			case OpCopyObject:
 			case OpLoad:
 			case OpInBoundsAccessChain:
 			case OpAccessChain:
@@ -2307,7 +2308,6 @@ void CompilerMSL::extract_global_variables_from_function(uint32_t func_id, std::
 				break;
 
 			case OpRayQueryInitializeKHR:
-			case OpRayQueryProceedKHR:
 			case OpRayQueryTerminateKHR:
 			case OpRayQueryGenerateIntersectionKHR:
 			case OpRayQueryConfirmIntersectionKHR:
@@ -2319,6 +2319,7 @@ void CompilerMSL::extract_global_variables_from_function(uint32_t func_id, std::
 				break;
 			}
 
+			case OpRayQueryProceedKHR:
 			case OpRayQueryGetRayTMinKHR:
 			case OpRayQueryGetRayFlagsKHR:
 			case OpRayQueryGetWorldRayOriginKHR:
@@ -10765,7 +10766,7 @@ void CompilerMSL::emit_instruction(const Instruction &instruction)
 	}
 	case OpRayQueryProceedKHR:
 	{
-		flush_variable_declaration(ops[0]);
+		flush_variable_declaration(ops[2]);
 		register_write(ops[2]);
 		emit_op(ops[0], ops[1], join(to_expression(ops[2]), ".next()"), false);
 		break;
@@ -10821,7 +10822,7 @@ void CompilerMSL::emit_instruction(const Instruction &instruction)
 		break;
 	case OpRayQueryGetIntersectionCandidateAABBOpaqueKHR:
 	{
-		flush_variable_declaration(ops[0]);
+		flush_variable_declaration(ops[2]);
 		emit_op(ops[0], ops[1], join("(!", to_expression(ops[2]), ".is_candidate_non_opaque_bounding_box())"), false);
 		break;
 	}
