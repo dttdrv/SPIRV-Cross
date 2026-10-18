@@ -19308,6 +19308,31 @@ string CompilerMSL::builtin_type_decl(BuiltIn builtin, uint32_t id)
 	case BuiltInPrimitiveTriangleIndicesEXT:
 		return "uint3";
 
+	// Ray tracing builtins.  They are normally read through the ray state or
+	// context, but a builtin a helper function uses is still passed to it as
+	// a parameter (e.g. gl_LaunchIDEXT in a ray generation shader), and that
+	// parameter needs a real type.
+	case BuiltInLaunchIdKHR:
+	case BuiltInLaunchSizeKHR:
+		return "uint3";
+	case BuiltInWorldRayOriginKHR:
+	case BuiltInWorldRayDirectionKHR:
+	case BuiltInObjectRayOriginKHR:
+	case BuiltInObjectRayDirectionKHR:
+		return "float3";
+	case BuiltInRayTminKHR:
+	case BuiltInRayTmaxKHR:
+		return "float";
+	case BuiltInInstanceCustomIndexKHR:
+	case BuiltInHitKindKHR:
+	case BuiltInIncomingRayFlagsKHR:
+	case BuiltInRayGeometryIndexKHR:
+	case BuiltInCullMaskKHR:
+		return "uint";
+	case BuiltInObjectToWorldKHR:
+	case BuiltInWorldToObjectKHR:
+		return "float4x3";
+
 	default:
 		return "unsupported-built-in-type";
 	}
